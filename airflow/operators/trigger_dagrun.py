@@ -75,6 +75,7 @@ class TriggerDagRunOperator(BaseOperator):
     :param trigger_dag_id: The dag_id to trigger (templated).
     :param trigger_run_id: The run ID to use for the triggered DAG run (templated).
         If not provided, a run ID will be automatically generated.
+    :param trigger_run_note: The note to use for the triggered DAG run (templated).
     :param conf: Configuration for the DAG run (templated).
     :param execution_date: Execution date for the dag (templated).
     :param reset_dag_run: Whether clear existing dag run if already exists.
@@ -108,6 +109,7 @@ class TriggerDagRunOperator(BaseOperator):
         *,
         trigger_dag_id: str,
         trigger_run_id: str | None = None,
+        trigger_run_note: str | None = None,
         conf: dict | None = None,
         execution_date: str | datetime.datetime | None = None,
         reset_dag_run: bool = False,
@@ -121,6 +123,7 @@ class TriggerDagRunOperator(BaseOperator):
         super().__init__(**kwargs)
         self.trigger_dag_id = trigger_dag_id
         self.trigger_run_id = trigger_run_id
+        self.trigger_run_note = trigger_run_note
         self.conf = conf
         self.reset_dag_run = reset_dag_run
         self.wait_for_completion = wait_for_completion
@@ -167,6 +170,7 @@ class TriggerDagRunOperator(BaseOperator):
                 conf=self.conf,
                 execution_date=parsed_execution_date,
                 replace_microseconds=False,
+                note=self.trigger_run_note,
             )
 
         except DagRunAlreadyExists as e:

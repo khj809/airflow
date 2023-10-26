@@ -127,3 +127,22 @@ class TestTriggerDag:
         triggers = _trigger_dag(dag_id, dag_bag_mock, conf=conf)
 
         assert triggers[0].conf == expected_conf
+
+    @pytest.mark.paremetrize(
+        "note, expected_note",
+        [
+            (None, None),
+            ("dagrun note", "dagrun note"),
+        ]
+    )
+    @mock.patch("airflow.models.DagBag")
+    def test_trigger_dag_with_note(self, dag_bag_mock, note, expected_note):
+        dag_id = "trigger_dag_with_note"
+        dag = DAG(dag_id)
+        dag_bag_mock.dags = [dag_id]
+        dag_bag_mock.get_dag.return_value = dag
+        dag_bag_mock.dags_hash = {}
+
+        triggers = _trigger_dag(dag_id, dag_bag_mock, note=note)
+
+        assert triggers[0].note == expected_note

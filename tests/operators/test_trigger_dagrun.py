@@ -489,3 +489,33 @@ class TestDagRunOperator:
             task.execute_complete(context={}, event=trigger.serialize())
 
             assert "failed with failed state" in str(exception)
+
+    def test_trigger_dagrun_operator_trigger_run_note(self):
+        """Test passing trigger_run_note to the triggered DagRun."""
+        task = TriggerDagRunOperator(
+            task_id="test_trigger_dagrun_with_str_execution_date",
+            trigger_dag_id=TRIGGERED_DAG_ID,
+            trigger_run_note="dagrun note",
+            dag=self.dag,
+        )
+        task.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+
+        with create_session() as session:
+            dagruns = session.query(DagRun).filter(DagRun.dag_id == TRIGGERED_DAG_ID).all()
+            assert len(dagruns) == 1
+            assert dagruns[0].note == "dagrun note"
+
+    def test_trigger_dagrun_operator_templated_trigger_run_note(self):
+        """Test passing a templated trigger_run_note to the triggered DagRun."""
+        task = TriggerDagRunOperator(
+            task_id="test_trigger_dagrun_with_str_execution_date",
+            trigger_dag_id=TRIGGERED_DAG_ID,
+            trigger_run_note="{{ dag.dag_id }}",
+            dag=self.dag,
+        )
+        task.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE, ignore_ti_state=True)
+
+        with create_session() as session:
+            dagruns = session.query(DagRun).filter(DagRun.dag_id == TRIGGERED_DAG_ID).all()
+            assert len(dagruns) == 1
+            assert dagruns[0].note == TEST_DAG_ID

@@ -2873,6 +2873,7 @@ class DAG(LoggingMixin):
         dag_hash: str | None = None,
         creating_job_id: int | None = None,
         data_interval: tuple[datetime, datetime] | None = None,
+        note: str | None = None,
     ):
         """
         Create a dag run from this dag including the tasks associated with this dag.
@@ -2890,6 +2891,7 @@ class DAG(LoggingMixin):
         :param session: database session
         :param dag_hash: Hash of Serialized DAG
         :param data_interval: Data interval of the DagRun
+        :param note: the note of the dag run
         """
         logical_date = timezone.coerce_datetime(execution_date)
 
@@ -2963,6 +2965,8 @@ class DAG(LoggingMixin):
             creating_job_id=creating_job_id,
             data_interval=data_interval,
         )
+        if note is not None:
+            run.note = note
         session.add(run)
         session.flush()
 
@@ -4021,6 +4025,7 @@ def _get_or_create_dagrun(
     run_id: str,
     session: Session,
     data_interval: tuple[datetime, datetime] | None = None,
+    note: str | None = None,
 ) -> DagRun:
     """Create a DAG run, replacing an existing instance if needed to prevent collisions.
 
@@ -4031,6 +4036,7 @@ def _get_or_create_dagrun(
     :param start_date: Start date of new run.
     :param execution_date: Logical date for finding an existing run.
     :param run_id: Run ID for the new DAG run.
+    :param note: the note of new run.
 
     :return: The newly created DAG run.
     """
@@ -4049,6 +4055,7 @@ def _get_or_create_dagrun(
         session=session,
         conf=conf,
         data_interval=data_interval,
+        note=note,
     )
     log.info("created dagrun %s", dr)
     return dr
